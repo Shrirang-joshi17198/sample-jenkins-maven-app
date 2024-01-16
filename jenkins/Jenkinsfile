@@ -11,6 +11,8 @@ pipeline {
                 script {
                     // Define Docker configuration within the script block
                     docker.image('maven:3.9.0').inside {
+                        // Install Maven in the Docker image
+                        sh 'mvn -version'
                         sh 'mvn -B -DskipTests clean package'
                     }
                 }
