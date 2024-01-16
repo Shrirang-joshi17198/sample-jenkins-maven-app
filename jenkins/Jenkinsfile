@@ -1,19 +1,11 @@
 pipeline {
     agent any
 
-    environment {
-        PREVIOUS_VERSION = ''
-        MVN_HOME = '/usr/share/maven'
-    }
-
     stages {
         stage('Build') {
             steps {
                 script {
-                    // Define Docker configuration within the script block
                     docker.image('maven:3.9.0').inside {
-                        // Install Maven in the Docker image
-                        sh 'mvn -version'
                         sh 'mvn -B -DskipTests clean package'
                     }
                 }
@@ -22,7 +14,6 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Run tests inside the same Docker container
                     docker.image('maven:3.9.0').inside {
                         sh 'mvn test'
                     }
@@ -37,14 +28,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Store the current version before deploying
-                    PREVIOUS_VERSION = sh(script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout', returnStdout: true).trim()
-
-                    // Use the same Docker image with Maven installed
-                    docker.image('maven:3.9.0').inside {
-                        // Run the Maven command for deployment
-                        sh 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout'
+                    try {
                         sh './jenkins/scripts/deliver.sh'
+                    } catch (Exception e) {
+                        echo "Rolling back due to error: ${e.message}"
+                        // Add rollback steps here
                     }
                 }
             }
