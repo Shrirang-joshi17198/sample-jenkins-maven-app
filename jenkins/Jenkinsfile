@@ -39,3 +39,18 @@ pipeline {
         }
     }
 }
+
+// Add the following block to the existing Jenkinsfile
+stage('Run Java Application') {
+    steps {
+        script {
+            try {
+                // Assuming your bash script is in the same directory as the Jenkinsfile
+                sh './jenkins/scripts/your-bash-script.sh'
+            } catch (Exception e) {
+                echo "Error running Java application: ${e.message}"
+                // Handle the error, add rollback steps if needed
+            }
+        }
+    }
+}
