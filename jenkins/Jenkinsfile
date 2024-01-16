@@ -27,7 +27,7 @@ pipeline {
                 }
             }
         }
-        stage('Deliver') {
+        stage('Deploy') {
             steps {
                 script {
                     // Run deliver script inside the same Docker container
