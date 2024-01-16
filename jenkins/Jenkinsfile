@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        PREVIOUS_VERSION = ''
+    }
+
     stages {
         stage('Build') {
             steps {
@@ -30,8 +34,32 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    // Store the current version before deploying
+                    PREVIOUS_VERSION = sh(script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout', returnStdout: true).trim()
+
                     // Run deliver script inside the same Docker container
-                    sh './jenkins/scripts/deliver.sh'
+                    script {
+                        def deployStatus = sh(script: './jenkins/scripts/deliver.sh', returnStatus: true)
+                        if (deployStatus != 0) {
+                            echo "Deployment failed. Rolling back to the previous version: ${PREVIOUS_VERSION}"
+
+                            // Perform rollback steps here (adjust as per your requirements)
+                            // For example, you may want to stop the application and revert database changes
+                            // In this example, we're just echoing the rollback steps
+
+                            echo "Stopping the application..."
+                            // Add commands to stop the application
+
+                            echo "Reverting to the previous version: ${PREVIOUS_VERSION}"
+                            // Add commands to revert to the previous version
+
+                            echo "Starting the application..."
+                            // Add commands to start the application
+
+                            // Mark the build as unstable or failed based on your criteria
+                            currentBuild.result = 'UNSTABLE'
+                        }
+                    }
                 }
             }
         }
