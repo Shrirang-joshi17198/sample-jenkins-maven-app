@@ -35,11 +35,27 @@ pipeline {
                         sh './jenkins/scripts/deliver.sh'
                     } catch (Exception e) {
                         echo "Rolling back due to error: ${e.message}"
-                        // Add rollback steps here
-                        // For example, you can revert database changes, stop services, etc.
+                        
+                        // Example rollback steps (replace with your specific rollback logic)
+                        sh './jenkins/scripts/rollback.sh'  // Rollback script to revert changes
+                        
+                        // Additional rollback steps (replace with your specific logic)
+                        // Example: Stop services
+                        sh 'docker-compose -f docker-compose.yml down'
+                        
+                        // Example: Restore a database backup
+                        sh 'pg_restore -U postgres -d my_database /path/to/backup.sql'
                     }
                 }
             }
         }
+    }
+}
+
+// Additional post section to clean up resources after the pipeline run
+post {
+    always {
+        // Clean up workspace
+        deleteDir()
     }
 }
